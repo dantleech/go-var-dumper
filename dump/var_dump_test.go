@@ -27,7 +27,6 @@ func TestDump(t *testing.T) {
 func testDump(value interface{}) string {
     dumper := Dumper{
         printer: NewPlainPrinter(),
-        pointers: make(map[uintptr]int),
     }
     return dumper.ToString(value)
 }

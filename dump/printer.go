@@ -27,10 +27,10 @@ func (f formatPrinter) formatNumeric(value string) string {
 func (f formatPrinter) formatString(value string) string {
     return fmt.Sprintf(f.StringFormat, value)
 }
-func (f formatPrinter) formatStruct(d Dumper, s dStruct) string {
+func (f formatPrinter) formatStruct(d Dumper, ctx context, s dStruct) string {
     out := []string{};
     for _, field := range(s.fields) {
-        out = append(out, fmt.Sprintf(f.StructFieldFormat, field.name, d.dumpValue(field.value)))
+        out = append(out, fmt.Sprintf(f.StructFieldFormat, field.name, d.dumpValue(ctx, field.value)))
     }
 
     return fmt.Sprintf(f.StructFormat, s.name, strings.Join(out, " "))

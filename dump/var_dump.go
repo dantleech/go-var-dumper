@@ -7,21 +7,20 @@ import (
 
 
 type Dumper struct {
-    pointers map[uintptr]int
     printer printer
 }
 
 type printer interface {
     formatNumeric(value string) string
     formatString(value string) string
-    formatStruct(d Dumper, s dStruct) string
+    formatStruct(d Dumper, ctx context, s dStruct) string
 }
 
 func (f Dumper) ToString(value interface{}) string {
-    return f.dumpValue(reflect.ValueOf(value))
+    return f.dumpValue(newContext(), reflect.ValueOf(value))
 }
 
-func (d Dumper) dumpValue(value reflect.Value) string {
+func (d Dumper) dumpValue(ctx context, value reflect.Value) string {
     kind := value.Kind()
     switch kind {
     case reflect.Int:
@@ -33,8 +32,8 @@ func (d Dumper) dumpValue(value reflect.Value) string {
     case reflect.String:
         return d.printer.formatString(fmt.Sprintf("%s", value.String()))
     case reflect.Ptr:
-        d.incPointer(value.Pointer())
-        return d.dumpValue(d.valueOfField(value.Elem()))
+        ctx.incPointer(value.Pointer())
+        return d.dumpValue(ctx, d.valueOfField(value.Elem()))
     case reflect.Struct:
         ds := dStruct{
             name: value.Type().Name(),
@@ -46,7 +45,7 @@ func (d Dumper) dumpValue(value reflect.Value) string {
                 value: d.valueOfField(value.Field(i)),
             })
         }
-        return d.printer.formatStruct(d, ds)
+        return d.printer.formatStruct(d, ctx, ds)
     }
 
     panic(fmt.Sprintf("Did not know how to format: %s", kind))
@@ -69,8 +68,17 @@ type dStructField struct {
     value reflect.Value;
 }
 
+func newContext() context {
+    return context{
+        pointers: make(map[uintptr]int),
+    }
+}
 
-func (c *Dumper) incPointer(ptr uintptr) {
+type context struct {
+    pointers map[uintptr]int
+}
+
+func (c *context) incPointer(ptr uintptr) {
     if _, ok := c.pointers[ptr]; ok {
         c.pointers[ptr]++
         return;
