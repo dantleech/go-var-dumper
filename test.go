@@ -16,8 +16,8 @@ type Foobar struct {
     bazboo Barfoo;
 }
 func main() {
-    dump.Dump("FOOBAR")
-
+    dump.Dump("Hello World")
+    dump.Dump(1234)
     f := Foobar{
         foobar: "Hello",
         barfoo: Barfoo{
@@ -27,6 +27,7 @@ func main() {
         boo: 12,
         bazboo: Barfoo{},
     }
+    f.bazboo.two = &f
 
     dump.Dump(f)
 }

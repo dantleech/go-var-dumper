@@ -28,6 +28,7 @@ type printer interface {
 
 func (f Dumper) Stderr(value interface{}) {
     fmt.Fprintf(os.Stderr, f.dumpValue(newContext(), reflect.ValueOf(value)))
+    fmt.Fprintf(os.Stderr, "\n")
 }
 
 
@@ -48,6 +49,9 @@ func (d Dumper) dumpValue(ctx context, value reflect.Value) string {
         return d.printer.formatString(fmt.Sprintf("%s", value.String()))
     case reflect.Ptr:
         ctx.incPointer(value.Pointer())
+        if value.IsNil() {
+            return "*nil"
+        }
         if ctx.pointerSeen(value.Pointer()) {
             return d.printer.formatCircularPointer(d, ctx, value)
         }
