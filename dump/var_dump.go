@@ -54,6 +54,7 @@ func (d Dumper) dumpValue(ctx context, value reflect.Value) string {
 
         return d.printer.formatPointer(d, ctx, value)
     case reflect.Struct:
+        ctx.depth++
         ds := dStruct{
             name: value.Type().Name(),
             fields: []dStructField{},
@@ -94,6 +95,7 @@ func newContext() context {
 }
 
 type context struct {
+    depth int
     pointers map[uintptr]int
 }
 
