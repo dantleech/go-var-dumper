@@ -27,20 +27,17 @@ func (f Dumper) dumpValue(value reflect.Value) string {
     case reflect.String:
         return f.string(fmt.Sprintf("%s", value.String()))
     case reflect.Struct:
-        out := []string{}
-        for i := 0; i < value.NumField(); i++ {
-            field := value.Field(i);
-            formattedValue := f.dumpValue(
-                f.valueOfField(field),
-            )
-
-            out = append(out, fmt.Sprintf(
-                "%s:%s",
-                value.Type().Field(i).Name,
-                formattedValue,
-            ))
+        ds := dStruct{
+            name: value.Type().Name(),
+            fields: []dStructField{},
         }
-        return fmt.Sprintf("%s{%s}", value.Type().Name(), strings.Join(out, " "))
+        for i := 0; i < value.NumField(); i++ {
+            ds.fields = append(ds.fields, dStructField{
+                name: value.Type().Field(i).Name,
+                value: f.valueOfField(value.Field(i)),
+            })
+        }
+        return f.formatStruct(ds)
     }
     panic(fmt.Sprintf("Did not know how to format: %s", kind))
 }
@@ -51,9 +48,27 @@ func (f Dumper) numeric(value string) string {
 func (f Dumper) string(value string) string {
     return fmt.Sprintf(f.StringFormat, value)
 }
+func (f Dumper) formatStruct(s dStruct) string {
+    out := []string{};
+    for _, field := range(s.fields) {
+        out = append(out, fmt.Sprintf("%s:%s", field.name, f.dumpValue(field.value)))
+    }
+
+    return fmt.Sprintf("%s{%s}", s.name, strings.Join(out, " "))
+}
 func (f Dumper) valueOfField(v reflect.Value) reflect.Value {
     if v.Kind() == reflect.Interface && !v.IsNil() {
         return v.Elem()
     }
     return v
+}
+
+type dStruct struct {
+    name string;
+    fields []dStructField;
+}
+
+type dStructField struct {
+    name string;
+    value reflect.Value;
 }
