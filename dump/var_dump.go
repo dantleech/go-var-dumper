@@ -7,6 +7,7 @@ import (
 
 
 type Dumper struct {
+    pointers map[uintptr]int
     printer printer
 }
 
@@ -31,6 +32,9 @@ func (d Dumper) dumpValue(value reflect.Value) string {
         return d.printer.formatNumeric(fmt.Sprintf("%v", value.Float()))
     case reflect.String:
         return d.printer.formatString(fmt.Sprintf("%s", value.String()))
+    case reflect.Ptr:
+        d.incPointer(value.Pointer())
+        return d.dumpValue(d.valueOfField(value.Elem()))
     case reflect.Struct:
         ds := dStruct{
             name: value.Type().Name(),
@@ -44,6 +48,7 @@ func (d Dumper) dumpValue(value reflect.Value) string {
         }
         return d.printer.formatStruct(d, ds)
     }
+
     panic(fmt.Sprintf("Did not know how to format: %s", kind))
 }
 
@@ -62,4 +67,14 @@ type dStruct struct {
 type dStructField struct {
     name string;
     value reflect.Value;
+}
+
+
+func (c *Dumper) incPointer(ptr uintptr) {
+    if _, ok := c.pointers[ptr]; ok {
+        c.pointers[ptr]++
+        return;
+    }
+
+    c.pointers[ptr] = 1
 }
