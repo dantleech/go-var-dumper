@@ -2,6 +2,7 @@ package dump
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 )
 
@@ -34,4 +35,10 @@ func (f formatPrinter) formatStruct(d Dumper, ctx context, s dStruct) string {
     }
 
     return fmt.Sprintf(f.StructFormat, s.name, strings.Join(out, " "))
+}
+func (f formatPrinter) formatPointer(d Dumper, ctx context, v reflect.Value) string {
+    return fmt.Sprintf("*%d#%s", v.Pointer(), d.dumpValue(ctx, v.Elem()))
+}
+func (f formatPrinter) formatCircularPointer(d Dumper, ctx context, v reflect.Value) string {
+    return fmt.Sprintf("*%d#**circular**", v.Pointer())
 }

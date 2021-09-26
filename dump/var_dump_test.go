@@ -20,7 +20,7 @@ func TestDump(t *testing.T) {
     t.Run("Struct with circular ref", func(t *testing.T) {
         s := testCircular{}
         s.circular = &s
-        require.Equal(t, "test1{Field1:\"hello\" Field2:23 private:\"\"}", testDump(s))
+        require.Equal(t, "testCircular{circular:*824633786472#testCircular{circular:*824633786472#**circular**}}", testDump(s))
     })
 }
 

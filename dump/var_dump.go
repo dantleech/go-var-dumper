@@ -14,6 +14,8 @@ type printer interface {
     formatNumeric(value string) string
     formatString(value string) string
     formatStruct(d Dumper, ctx context, s dStruct) string
+    formatPointer(d Dumper, ctx context, value reflect.Value) string
+    formatCircularPointer(d Dumper, ctx context, value reflect.Value) string
 }
 
 func (f Dumper) ToString(value interface{}) string {
@@ -33,7 +35,11 @@ func (d Dumper) dumpValue(ctx context, value reflect.Value) string {
         return d.printer.formatString(fmt.Sprintf("%s", value.String()))
     case reflect.Ptr:
         ctx.incPointer(value.Pointer())
-        return d.dumpValue(ctx, d.valueOfField(value.Elem()))
+        if ctx.pointerSeen(value.Pointer()) {
+            return d.printer.formatCircularPointer(d, ctx, value)
+        }
+
+        return d.printer.formatPointer(d, ctx, value)
     case reflect.Struct:
         ds := dStruct{
             name: value.Type().Name(),
@@ -85,4 +91,11 @@ func (c *context) incPointer(ptr uintptr) {
     }
 
     c.pointers[ptr] = 1
+}
+func (c *context) pointerSeen(ptr uintptr) bool {
+    if count, ok := c.pointers[ptr]; ok {
+        return count == 2;
+    }
+
+    return false
 }
