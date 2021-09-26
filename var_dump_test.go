@@ -27,8 +27,10 @@ func TestDump(t *testing.T) {
 
 func testDump(value interface{}) string {
     dumper := Dumper{
-        NumericFormat: "n:%s",
-        StringFormat: "s:%s",
+        formatter: PlainFormatter{
+            NumericFormat: "n:%s",
+            StringFormat: "s:%s",
+        },
     }
     return dumper.ToString(value)
 }
