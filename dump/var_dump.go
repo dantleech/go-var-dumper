@@ -2,9 +2,17 @@ package dump
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 )
 
+
+func Dump(value interface{}) {
+    dumper := Dumper{
+        printer: newAnsiPrinter(),
+    }
+    dumper.Stderr(value)
+}
 
 type Dumper struct {
     printer printer
@@ -17,6 +25,11 @@ type printer interface {
     formatPointer(d Dumper, ctx context, value reflect.Value) string
     formatCircularPointer(d Dumper, ctx context, value reflect.Value) string
 }
+
+func (f Dumper) Stderr(value interface{}) {
+    fmt.Fprintf(os.Stderr, f.dumpValue(newContext(), reflect.ValueOf(value)))
+}
+
 
 func (f Dumper) ToString(value interface{}) string {
     return f.dumpValue(newContext(), reflect.ValueOf(value))
@@ -54,7 +67,7 @@ func (d Dumper) dumpValue(ctx context, value reflect.Value) string {
         return d.printer.formatStruct(d, ctx, ds)
     }
 
-    panic(fmt.Sprintf("Did not know how to format: %s", kind))
+    return "invalid"
 }
 
 func (f Dumper) valueOfField(v reflect.Value) reflect.Value {

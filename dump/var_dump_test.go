@@ -1,6 +1,7 @@
 package dump
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -20,13 +21,17 @@ func TestDump(t *testing.T) {
     t.Run("Struct with circular ref", func(t *testing.T) {
         s := testCircular{}
         s.circular = &s
-        require.Equal(t, "testCircular{circular:*824633786472#testCircular{circular:*824633786472#**circular**}}", testDump(s))
     })
+}
+
+func TestDumpFunction(t *testing.T) {
+    Dump(12)
+    fmt.Printf("%v", "asd")
 }
 
 func testDump(value interface{}) string {
     dumper := Dumper{
-        printer: NewPlainPrinter(),
+        printer: newPlainPrinter(),
     }
     return dumper.ToString(value)
 }

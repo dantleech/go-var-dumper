@@ -6,7 +6,16 @@ import (
 	"strings"
 )
 
-func NewPlainPrinter() formatPrinter {
+func newAnsiPrinter() formatPrinter {
+    return formatPrinter{
+        NumericFormat: "\033[1;34m%s\033[0m",
+        StringFormat:  "\033[1;36m%s\033[0m",
+        StructFormat: "\033[1;33m%s\033[0m{\n%s}",
+        StructFieldFormat: "\033[0;36m%s\033[0m:%s\n",
+    }
+}
+
+func newPlainPrinter() formatPrinter {
     return formatPrinter{
         NumericFormat: `%s`,
         StringFormat: `"%s"`,
