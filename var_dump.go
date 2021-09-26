@@ -7,10 +7,10 @@ import (
 
 
 type Dumper struct {
-    formatter formatter
+    printer printer
 }
 
-type formatter interface {
+type printer interface {
     formatNumeric(value string) string
     formatString(value string) string
     formatStruct(d Dumper, s dStruct) string
@@ -24,13 +24,13 @@ func (d Dumper) dumpValue(value reflect.Value) string {
     kind := value.Kind()
     switch kind {
     case reflect.Int:
-        return d.formatter.formatNumeric(fmt.Sprintf("%d", value.Int()))
+        return d.printer.formatNumeric(fmt.Sprintf("%d", value.Int()))
     case reflect.Float32:
-        return d.formatter.formatNumeric(fmt.Sprintf("%v", value.Float()))
+        return d.printer.formatNumeric(fmt.Sprintf("%v", value.Float()))
     case reflect.Float64:
-        return d.formatter.formatNumeric(fmt.Sprintf("%v", value.Float()))
+        return d.printer.formatNumeric(fmt.Sprintf("%v", value.Float()))
     case reflect.String:
-        return d.formatter.formatString(fmt.Sprintf("%s", value.String()))
+        return d.printer.formatString(fmt.Sprintf("%s", value.String()))
     case reflect.Struct:
         ds := dStruct{
             name: value.Type().Name(),
@@ -42,7 +42,7 @@ func (d Dumper) dumpValue(value reflect.Value) string {
                 value: d.valueOfField(value.Field(i)),
             })
         }
-        return d.formatter.formatStruct(d, ds)
+        return d.printer.formatStruct(d, ds)
     }
     panic(fmt.Sprintf("Did not know how to format: %s", kind))
 }
